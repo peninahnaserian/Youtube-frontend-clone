@@ -1,26 +1,45 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import { Grid } from "@material-ui/core"; //named export/import
+import youtube from "./api/youtube";
 
-function App() {
+//importing the components
+import { SearchBar, VideoDetail, VideoList } from "./components";
+
+export default () => {
+  const [videos, setVideos] = useState([]);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Grid style={{justifyContent:"center"}} container spacing={10}>
+      <Grid item xs={11}>
+        <Grid container spacing={10}>
+          <Grid item xs={12}>
+            <SearchBar onSubmit={handleSubmit} />
+          </Grid>
+          <Grid item xs={8}>
+            <VideoDetail video={selectedVideo} />
+          </Grid>
+          <Grid item xs={4}>
+           <VideoList videos= {videos}  onVideoSelect= {setSelectedVideo} />
+          </Grid>
+        </Grid>
+      </Grid>
+    </Grid>
   );
-}
-
-export default App;
+  async function handleSubmit(searchTerm) {
+        try{
+            const response = await youtube.get('search',{
+            params: {
+                q: searchTerm,
+                key: "AIzaSyBbUh2plGq6aFKVtVTlRHRKRhs9EVu-L-s", //API key
+                part: "snippet",
+                maxResults: 5
+            },
+            });
+            setVideos(response.data.items);
+            setSelectedVideo(response.data.items[0]);
+        } catch(err) {
+            console.log(err);
+        }
+    }
+};
